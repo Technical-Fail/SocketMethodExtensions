@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Net.Sockets;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Technical.Fail.SocketMethodExtensions
@@ -53,7 +54,7 @@ namespace Technical.Fail.SocketMethodExtensions
             }
         }
 
-        public static async Task ReceiveExactlyAsync(this Socket socket, ArraySegment<byte> buffer)
+        public static async Task ReceiveExactlyAsync(this Socket socket, ArraySegment<byte> buffer, CancellationToken cancellationToken = default(CancellationToken))
         {
             LockSocket(socket);
             try
@@ -64,7 +65,7 @@ namespace Technical.Fail.SocketMethodExtensions
                 int bytesReceived = 0;
                 while (bytesReceived < byteCountToReceive)
                 {
-                    int readCount = await socket.ReceiveAsync(buffer: buffer.AsMemory().Slice(offset, byteCountToReceive), socketFlags: SocketFlags.None);
+                    int readCount = await socket.ReceiveAsync(buffer: buffer.AsMemory().Slice(offset, byteCountToReceive), socketFlags: SocketFlags.None, cancellationToken: cancellationToken);
                     if (readCount == 0)
                         throw new ConnectionClosedException();
                     offset += readCount;

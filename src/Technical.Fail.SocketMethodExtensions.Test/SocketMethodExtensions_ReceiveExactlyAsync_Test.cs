@@ -87,6 +87,24 @@ namespace Technical.Fail.SocketMethodExtensions.Test
             }
         }
 
+        [Fact]
+        public async void ReceiveExactlyAsync_Cancelled_ExpectCancelException_Test()
+        {
+            var cancellationTokenSource = new CancellationTokenSource();
+            using (var pair = await SocketTestUtils.ConnectSocketPairAsync())
+            {
+                // Send some of the bytes but not all
+                pair.Socket1.Send(new byte[] { 0, 1, 2, 3 });
+
+                var receiveBuffer = new byte[15];
+                ArraySegment<byte> segmentBuffer = receiveBuffer;
+
+                var receiveTask = pair.Socket2.ReceiveExactlyAsync(buffer: segmentBuffer.Slice(0, 10), cancellationToken: cancellationTokenSource.Token);
+                cancellationTokenSource.CancelAfter(TimeSpan.FromSeconds(2));
+                await Assert.ThrowsAsync<OperationCanceledException>(() => receiveTask);
+            }
+        }
+
 
 
         [Fact]
