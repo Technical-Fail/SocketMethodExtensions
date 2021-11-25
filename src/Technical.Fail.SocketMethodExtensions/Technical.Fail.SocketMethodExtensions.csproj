@@ -5,6 +5,7 @@
     <Nullable>enable</Nullable>
     <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
     <Authors>Stephan Møller</Authors>
+    <PackageProjectUrl>https://github.com/Technical-Fail/SocketMethodExtensions</PackageProjectUrl>
   </PropertyGroup>
 
 </Project>
