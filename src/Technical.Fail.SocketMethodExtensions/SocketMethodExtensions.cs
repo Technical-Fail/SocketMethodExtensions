@@ -53,59 +53,28 @@ namespace Technical.Fail.SocketMethodExtensions
             }
         }
 
-        public static Task ReceiveExactlyAsync(this Socket socket, ArraySegment<byte> buffer)
+        public static async Task ReceiveExactlyAsync(this Socket socket, ArraySegment<byte> buffer)
         {
             LockSocket(socket);
-
-            int offset = 0;
-            int byteCountToReceive = buffer.Count;
-
-            TaskCompletionSource<bool> resultSource = new TaskCompletionSource<bool>(); // Bool is a random value/type as there is no non-generic TaskCompletionSource in dotnet standard 2.1
-            
-            void onReceive(IAsyncResult ar)
+            try
             {
-                try
+                int offset = 0;
+                int byteCountToReceive = buffer.Count;
+
+                int bytesReceived = 0;
+                while (bytesReceived < byteCountToReceive)
                 {
-                    int readByteCount = socket.EndReceive(ar);
-                    if (readByteCount > 0)
-                    {
-                        // Data received
-                        byteCountToReceive -= readByteCount;
-                        offset += readByteCount;
-
-                        if (byteCountToReceive > 0)
-                        {
-                            // Still missing bits    
-
-                            beginReceive();
-                        }
-                        else
-                        {
-                            // Done - return
-                            resultSource.SetResult(true); // Bool is a random value/type as there is no non-generic TaskCompletionSource in dotnet standard 2.1
-                            UnlockSocket(socket);
-                        }
-                    }
-                    else
-                    {
-                        // Connection closed
+                    int readCount = await socket.ReceiveAsync(buffer: buffer.AsMemory().Slice(offset, byteCountToReceive), socketFlags: SocketFlags.None);
+                    if (readCount == 0)
                         throw new ConnectionClosedException();
-                    }
-                }
-                catch (Exception ex)
-                {
-                    resultSource.SetException(ex);
-                    UnlockSocket(socket);
+                    offset += readCount;
+                    byteCountToReceive -= readCount;
                 }
             }
-
-            void beginReceive() {
-                socket.BeginReceive(buffers: new List<ArraySegment<byte>>(capacity: 1) { buffer.Slice(offset) }, socketFlags: SocketFlags.None, state: null, callback: onReceive);
-            };
-
-            beginReceive();
-
-            return resultSource.Task; // Ensures to unlock socket in the end - no matter how it is finished
+            finally
+            {
+                UnlockSocket(socket);
+            }
         }
     }
 
