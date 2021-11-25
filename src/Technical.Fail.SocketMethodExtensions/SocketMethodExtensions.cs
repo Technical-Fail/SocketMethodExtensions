@@ -61,7 +61,7 @@ namespace Technical.Fail.SocketMethodExtensions
             int byteCountToReceive = buffer.Count;
 
             var resultSource = new TaskCompletionSource<bool>(); // Bool is a random value/type as there is no non-generic TaskCompletionSource in dotnet standard 2.1
-            Action? beginReceive = null;
+            Action beginReceive = null;
             AsyncCallback onReceive = (IAsyncResult ar) =>
             {
                 try
