@@ -9,7 +9,7 @@ namespace Technical.Fail.SocketMethodExtensions
     {
         // Used to avoid calling ReceiveExactly multiple times simultaniously
 
-        private static HashSet<Socket> _lockedSockets = new HashSet<Socket>();
+        private static readonly HashSet<Socket> _lockedSockets = new HashSet<Socket>();
         private static void LockSocket(Socket socket)
         {
             lock (_lockedSockets)
@@ -60,9 +60,9 @@ namespace Technical.Fail.SocketMethodExtensions
             int offset = 0;
             int byteCountToReceive = buffer.Count;
 
-            var resultSource = new TaskCompletionSource<bool>(); // Bool is a random value/type as there is no non-generic TaskCompletionSource in dotnet standard 2.1
-            Action? beginReceive = null;
-            AsyncCallback onReceive = (IAsyncResult ar) =>
+            TaskCompletionSource<bool> resultSource = new TaskCompletionSource<bool>(); // Bool is a random value/type as there is no non-generic TaskCompletionSource in dotnet standard 2.1
+            
+            void onReceive(IAsyncResult ar)
             {
                 try
                 {
@@ -77,9 +77,7 @@ namespace Technical.Fail.SocketMethodExtensions
                         {
                             // Still missing bits    
 
-#pragma warning disable CS8602 // Dereference of a possibly null reference.
                             beginReceive();
-#pragma warning restore CS8602 // Dereference of a possibly null reference.
                         }
                         else
                         {
@@ -99,10 +97,9 @@ namespace Technical.Fail.SocketMethodExtensions
                     resultSource.SetException(ex);
                     UnlockSocket(socket);
                 }
-            };
+            }
 
-            beginReceive = () =>
-            {
+            void beginReceive() {
                 socket.BeginReceive(buffers: new List<ArraySegment<byte>>(capacity: 1) { buffer.Slice(offset) }, socketFlags: SocketFlags.None, state: null, callback: onReceive);
             };
 
