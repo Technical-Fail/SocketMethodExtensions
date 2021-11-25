@@ -23,3 +23,5 @@ jobs:
       run: dotnet build --no-restore
     - name: Test
       run: dotnet test --no-build --verbosity normal
+    - name: Push to nuget.org
+      run: dotnet nuget push "**/*.nupkg" --source "nuget.org" --api-key ${{secrets.NUGET_API_KEY}}
