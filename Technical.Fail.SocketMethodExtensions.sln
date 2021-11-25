@@ -1,0 +1,31 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.0.31912.275
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Technical.Fail.SocketMethodExtensions", "Technical.Fail.SocketMethodExtensions\Technical.Fail.SocketMethodExtensions.csproj", "{0B1C9564-DABC-4C31-BAFA-519FE6DFEF99}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Technical.Fail.SocketMethodExtensions.Test", "Technical.Fail.SocketMethodExtensions.Test\Technical.Fail.SocketMethodExtensions.Test.csproj", "{325AB95A-684B-4BE4-805E-E42B7BFE4526}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{0B1C9564-DABC-4C31-BAFA-519FE6DFEF99}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0B1C9564-DABC-4C31-BAFA-519FE6DFEF99}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0B1C9564-DABC-4C31-BAFA-519FE6DFEF99}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0B1C9564-DABC-4C31-BAFA-519FE6DFEF99}.Release|Any CPU.Build.0 = Release|Any CPU
+		{325AB95A-684B-4BE4-805E-E42B7BFE4526}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{325AB95A-684B-4BE4-805E-E42B7BFE4526}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{325AB95A-684B-4BE4-805E-E42B7BFE4526}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{325AB95A-684B-4BE4-805E-E42B7BFE4526}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {AD99AF31-488B-4048-9925-2AAE8A151D50}
+	EndGlobalSection
+EndGlobal
