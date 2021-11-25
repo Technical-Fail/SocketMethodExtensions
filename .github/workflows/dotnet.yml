@@ -20,8 +20,8 @@ jobs:
     - name: Restore dependencies
       run: dotnet restore
     - name: Build
-      run: dotnet build --no-restore
+      run: dotnet build --no-restore -c Release /property:Version=1.0.${{github.run_number}}
     - name: Test
-      run: dotnet test --no-build --verbosity normal
+      run: dotnet test --no-build -c Release --verbosity normal
     - name: Push to nuget.org
-      run: dotnet nuget push "**/*.nupkg" --source "nuget.org" --api-key ${{secrets.NUGET_API_KEY}}
+      run: dotnet nuget push "**/Release/*1.0.${{github.run_number}}*.nupkg" --source "nuget.org" --api-key ${{secrets.NUGET_API_KEY}}
