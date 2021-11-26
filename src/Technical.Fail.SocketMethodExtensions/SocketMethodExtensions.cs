@@ -30,18 +30,18 @@ namespace Technical.Fail.SocketMethodExtensions
             }
         }
 
-        public static void ReceiveExactlyBlocking(this Socket socket, ArraySegment<byte> buffer)
+        public static void ReceiveExactlyBlocking(this Socket socket, Memory<byte> buffer)
         {
             LockSocket(socket);
             try
             {
                 int offset = 0;
-                int byteCountToReceive = buffer.Count;
+                int byteCountToReceive = buffer.Length;
 
                 int bytesReceived = 0;
                 while (bytesReceived < byteCountToReceive)
                 {
-                    int readCount = socket.Receive(buffer: buffer.AsSpan().Slice(offset, byteCountToReceive), socketFlags: SocketFlags.None);
+                    int readCount = socket.Receive(buffer: buffer.Span.Slice(offset, byteCountToReceive), socketFlags: SocketFlags.None);
                     if (readCount == 0)
                         throw new ConnectionClosedException();
                     offset += readCount;
@@ -54,18 +54,18 @@ namespace Technical.Fail.SocketMethodExtensions
             }
         }
 
-        public static async Task ReceiveExactlyAsync(this Socket socket, ArraySegment<byte> buffer, CancellationToken cancellationToken = default(CancellationToken))
+        public static async Task ReceiveExactlyAsync(this Socket socket, Memory<byte> buffer, CancellationToken cancellationToken = default(CancellationToken))
         {
             LockSocket(socket);
             try
             {
                 int offset = 0;
-                int byteCountToReceive = buffer.Count;
+                int byteCountToReceive = buffer.Length;
 
                 int bytesReceived = 0;
                 while (bytesReceived < byteCountToReceive)
                 {
-                    int readCount = await socket.ReceiveAsync(buffer: buffer.AsMemory().Slice(offset, byteCountToReceive), socketFlags: SocketFlags.None, cancellationToken: cancellationToken);
+                    int readCount = await socket.ReceiveAsync(buffer: buffer.Slice(offset, byteCountToReceive), socketFlags: SocketFlags.None, cancellationToken: cancellationToken);
                     if (readCount == 0)
                         throw new ConnectionClosedException();
                     offset += readCount;
