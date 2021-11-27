@@ -20,9 +20,10 @@ namespace Technical.Fail.SocketMethodExtensions.Test
             // Connect client and server
             listener.Start();
             Task connectTask = clientSocket.ConnectAsync(serverEndpoint);
-            Socket serverSideSocket = listener.AcceptSocket();
-            listener.Stop();
+            Task<Socket> acceptTask = listener.AcceptSocketAsync();
             await connectTask;
+            Socket serverSideSocket = await acceptTask;
+            listener.Stop();
             return new SocketPair(socket1: serverSideSocket, socket2: clientSocket);
         }
 
