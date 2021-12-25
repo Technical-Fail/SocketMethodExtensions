@@ -8,28 +8,6 @@ namespace Technical.Fail.SocketMethodExtensions
 {
     public static class SocketMethodExtensions
     {
-        // Used to avoid calling ReceiveExactly multiple times simultaniously
-
-        private static readonly HashSet<Socket> _lockedSockets = new HashSet<Socket>();
-        private static void LockSocket(Socket socket)
-        {
-            lock (_lockedSockets)
-            {
-                if (_lockedSockets.Contains(socket))
-                    throw new AlreadyListeningException("Already receiving on socket!");
-                _lockedSockets.Add(socket);
-            }
-        }
-
-        private static void UnlockSocket(Socket socket)
-        {
-            lock (_lockedSockets)
-            {
-                if (_lockedSockets.Contains(socket))
-                    _lockedSockets.Remove(socket);
-            }
-        }
-
         public static void ReceiveExactlyBlocking(this Socket socket, Memory<byte> buffer)
         {
             LockSocket(socket);
@@ -77,6 +55,28 @@ namespace Technical.Fail.SocketMethodExtensions
                 UnlockSocket(socket);
             }
         }
+
+        // Used to avoid calling ReceiveExactly multiple times simultaniously
+        private static readonly HashSet<Socket> _lockedSockets = new HashSet<Socket>();
+        private static void LockSocket(Socket socket)
+        {
+            lock (_lockedSockets)
+            {
+                if (_lockedSockets.Contains(socket))
+                    throw new AlreadyListeningException("Already receiving on socket!");
+                _lockedSockets.Add(socket);
+            }
+        }
+
+        private static void UnlockSocket(Socket socket)
+        {
+            lock (_lockedSockets)
+            {
+                if (_lockedSockets.Contains(socket))
+                    _lockedSockets.Remove(socket);
+            }
+        }
+
     }
 
     public class ConnectionClosedException : Exception { }

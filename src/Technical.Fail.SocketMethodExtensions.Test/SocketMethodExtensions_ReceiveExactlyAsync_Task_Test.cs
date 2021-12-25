@@ -5,7 +5,7 @@ using System.Threading;
 
 namespace Technical.Fail.SocketMethodExtensions.Test
 {
-    public class SocketMethodExtensions_ReceiveExactlyAsync_Test
+    public class SocketMethodExtensions_ReceiveExactlyAsync_Task_Test
     {
         [Fact]
         public async void ReceiveExactlyAsync_SingleChunk_SendAndReceiveSameCount_Test()
