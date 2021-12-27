@@ -32,7 +32,7 @@ namespace Technical.Fail.SocketMethodExtensions
             }
         }
 
-        public static async Task ReceiveExactlyAsync(this Socket socket, Memory<byte> buffer, CancellationToken cancellationToken = default(CancellationToken))
+        public static async ValueTask ReceiveExactlyAsync(this Socket socket, Memory<byte> buffer, CancellationToken cancellationToken = default(CancellationToken))
         {
             LockSocket(socket);
             try
