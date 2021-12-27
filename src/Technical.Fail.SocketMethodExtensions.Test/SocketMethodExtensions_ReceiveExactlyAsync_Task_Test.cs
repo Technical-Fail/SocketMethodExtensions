@@ -101,7 +101,7 @@ namespace Technical.Fail.SocketMethodExtensions.Test
 
                 var receiveTask = pair.Socket2.ReceiveExactlyAsync(buffer: segmentBuffer.Slice(0, 10), cancellationToken: cancellationTokenSource.Token);
                 cancellationTokenSource.CancelAfter(TimeSpan.FromSeconds(2));
-                await Assert.ThrowsAsync<OperationCanceledException>(() => receiveTask);
+                await Assert.ThrowsAsync<OperationCanceledException>(() => receiveTask.AsTask());
             }
         }
 
@@ -116,7 +116,7 @@ namespace Technical.Fail.SocketMethodExtensions.Test
                 var receiveBuffer = new byte[20];
                 ArraySegment<byte> buffer = receiveBuffer;
                 var rec1 = pair.Socket2.ReceiveExactlyAsync(buffer: buffer.Slice(0, 5));
-                await Assert.ThrowsAsync<AlreadyListeningException>(() => pair.Socket2.ReceiveExactlyAsync(buffer: buffer.Slice(5, 3)));
+                await Assert.ThrowsAsync<AlreadyListeningException>(() => pair.Socket2.ReceiveExactlyAsync(buffer: buffer.Slice(5, 3)).AsTask());
             }
         }
 
@@ -137,7 +137,7 @@ namespace Technical.Fail.SocketMethodExtensions.Test
                 }));
                 thread.Start();
                 Thread.Sleep(TimeSpan.FromSeconds(2));
-                await Assert.ThrowsAsync<AlreadyListeningException>(() => pair.Socket2.ReceiveExactlyAsync(buffer: buffer.Slice(5, 3)));
+                await Assert.ThrowsAsync<AlreadyListeningException>(() => pair.Socket2.ReceiveExactlyAsync(buffer: buffer.Slice(5, 3)).AsTask());
             }
         }
 
@@ -166,7 +166,7 @@ namespace Technical.Fail.SocketMethodExtensions.Test
                     var task = Task.Delay(TimeSpan.FromSeconds(closeDelaySeconds)).ContinueWith(t => pair.Socket1.Close());
                 }
 
-                await Assert.ThrowsAsync<ConnectionClosedException>(() => receiveTask);
+                await Assert.ThrowsAsync<ConnectionClosedException>(() => receiveTask.AsTask());
             }
         }
 
