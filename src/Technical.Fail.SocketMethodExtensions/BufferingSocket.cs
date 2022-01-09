@@ -6,7 +6,7 @@ namespace Technical.Fail.SocketMethodExtensions
 {
     public interface IBufferingSocket
     {
-        ValueTask<ReadOnlyMemory<byte>> ReadAsync(int byteCount);
+        ValueTask<ReadOnlyMemory<byte>> ReadExactlyAsync(int byteCount);
         ValueTask FlushAsync();
         void Write(int byteCount, Action<Memory<byte>> writer);
     }
@@ -22,7 +22,7 @@ namespace Technical.Fail.SocketMethodExtensions
             _socket = socket;
         }
 
-        public async ValueTask<ReadOnlyMemory<byte>> ReadAsync(int byteCount)
+        public async ValueTask<ReadOnlyMemory<byte>> ReadExactlyAsync(int byteCount)
         {
             _readBuffer = EnsureBufferSize(existingBuffer: _readBuffer, minimumSize: byteCount, copyValues: false);
 
@@ -31,6 +31,11 @@ namespace Technical.Fail.SocketMethodExtensions
             return memory;
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="byteCount">The needed byte count to be sent.</param>
+        /// <param name="writer">A function that is called with a buffer size of exactly the requested byteCount provided.</param>
         public void Write(int byteCount, Action<Memory<byte>> writer)
         {
             _writeBuffer = EnsureBufferSize(existingBuffer: _writeBuffer, minimumSize: byteCount + _writePosition, copyValues: true);

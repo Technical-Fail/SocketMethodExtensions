@@ -33,3 +33,31 @@ Use a fixed sized message or specify the length of the next message with the fir
 ### Specifying a delimiter in the end of a message (Not yet supported)
 
 Using a delimiter to specify where one message stop and another message begin. In the future I plan on adding method extensions to wait for data until a certain delimiter specified as a fixed range of bytes has been detected.
+
+
+# BufferingSocket
+
+This class handles buffering and allows for onliners for both reading and writing.
+
+## ReadExactlyAsync
+
+```cs
+Socket socket = ...
+var bufferingSocket = new BufferingSocket(socket);
+Span<byte> bytes = bufferingSocket.ReadExactlyAsync(byteCount: 6); // Task will complete when exactly 6 bytes are received
+```
+
+## Writing
+
+The write method allows for multiple write calls before a final flush is done, spasring the network connection and prevents fragmented ip packages to be sent until the consumer wants this to happen.
+
+```cs
+Socket socket = ...
+var bufferingSocket = new BufferingSocket(socket);
+socket.Write(byteCount: 3, writer: memory => {
+	// Memory is exactly 3 bytes long here
+	memory.Span[0] = 0;
+	memory.Span[1] = 1;
+	memory.Span[2] = 2;
+})
+```

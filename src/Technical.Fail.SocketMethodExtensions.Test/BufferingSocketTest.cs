@@ -10,7 +10,7 @@ namespace Technical.Fail.SocketMethodExtensions.Test
     public class BufferingSocketTest
     {
         [Fact]
-        public async void SendReceive()
+        public async void Send_ReadExactlyAsync()
         {
             using (var pair = await SocketTestUtils.ConnectBufferingSocketsAsync())
             {
@@ -18,7 +18,7 @@ namespace Technical.Fail.SocketMethodExtensions.Test
                 pair.Sender.Write(byteCount: 3, writer: memory => { memory.Span[0] = 3; memory.Span[1] = 4; memory.Span[2] = 5; });
                 await pair.Sender.FlushAsync();
 
-                var receivedTask = pair.Receiver.ReadAsync(byteCount: 6);
+                var receivedTask = pair.Receiver.ReadExactlyAsync(byteCount: 6);
                 await Task.Delay(TimeSpan.FromSeconds(1));
                 Assert.True(receivedTask.IsCompleted);
                 var received = await receivedTask;
@@ -27,7 +27,7 @@ namespace Technical.Fail.SocketMethodExtensions.Test
         }
 
         [Fact]
-        public async void SendbigChunksOfDataToTestInternalBufferRegrowing()
+        public async void Send_ReadExactlyAsync_BigChunksOfDataToTestInternalBufferRegrowing()
         {
             using (var pair = await SocketTestUtils.ConnectBufferingSocketsAsync())
             {
@@ -38,7 +38,7 @@ namespace Technical.Fail.SocketMethodExtensions.Test
                 await pair.Sender.FlushAsync();
 
                 {
-                    var received = await pair.Receiver.ReadAsync(byteCount: 50);
+                    var received = await pair.Receiver.ReadExactlyAsync(byteCount: 50);
                     var expectedBytes = new byte[50];
                     for (byte i = 0; i < 50; i++)
                     {
@@ -49,7 +49,7 @@ namespace Technical.Fail.SocketMethodExtensions.Test
                 }
 
                 {
-                    var received = await pair.Receiver.ReadAsync(byteCount: 50);
+                    var received = await pair.Receiver.ReadExactlyAsync(byteCount: 50);
                     var expectedBytes = new byte[50];
                     for (byte i = 0; i < 50; i++)
                     {
@@ -63,13 +63,13 @@ namespace Technical.Fail.SocketMethodExtensions.Test
         }
 
         [Fact]
-        public async void SendReceive_EnsureNotSentUntilFlushIsCalled()
+        public async void Send_ReadExactlyAsync_EnsureNotSentUntilFlushIsCalled()
         {
             using (var pair = await SocketTestUtils.ConnectBufferingSocketsAsync())
             {
                 pair.Sender.Write(byteCount: 3, writer: memory => { memory.Span[0] = 0; memory.Span[1] = 1; memory.Span[2] = 2; });
                 pair.Sender.Write(byteCount: 3, writer: memory => { memory.Span[0] = 3; memory.Span[1] = 4; memory.Span[2] = 5; });
-                var receivedTask = pair.Receiver.ReadAsync(byteCount: 6);
+                var receivedTask = pair.Receiver.ReadExactlyAsync(byteCount: 6);
                 await Task.Delay(TimeSpan.FromSeconds(1));
                 Assert.False(receivedTask.IsCompleted);
                 await pair.Sender.FlushAsync();
@@ -79,12 +79,12 @@ namespace Technical.Fail.SocketMethodExtensions.Test
         }
 
         [Fact]
-        public async void SendReceive_EnsureNotReceivedUntilDesiredByteCountAvailable()
+        public async void Send_ReadExactlyAsync_EnsureNotReceivedUntilDesiredByteCountAvailable()
         {
             using (var pair = await SocketTestUtils.ConnectBufferingSocketsAsync())
             {
                 pair.Sender.Write(byteCount: 3, writer: memory => { memory.Span[0] = 0; memory.Span[1] = 1; memory.Span[2] = 2; });
-                var receivedTask = pair.Receiver.ReadAsync(byteCount: 6);
+                var receivedTask = pair.Receiver.ReadExactlyAsync(byteCount: 6);
                 await Task.Delay(TimeSpan.FromSeconds(1));
                 Assert.False(receivedTask.IsCompleted);
                 pair.Sender.Write(byteCount: 4, writer: memory => { memory.Span[0] = 3; memory.Span[1] = 4; memory.Span[2] = 5; memory.Span[3] = 6; }); //S ending an extra byte to ensure only specified byte count will be received
