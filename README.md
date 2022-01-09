@@ -59,5 +59,13 @@ socket.Write(byteCount: 3, writer: memory => {
 	memory.Span[0] = 0;
 	memory.Span[1] = 1;
 	memory.Span[2] = 2;
-})
+});
+
+socket.Write(byteCount: 1, writer: memory => {
+	// Memory is exactly 1 bytes long here
+	memory.Span[0] = 10;
+});
+
+// Nothing is actually sent until FlushAsync has been called.
+await socket.FlushAsync();
 ```
