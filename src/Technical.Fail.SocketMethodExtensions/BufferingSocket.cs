@@ -9,6 +9,7 @@ namespace Technical.Fail.SocketMethodExtensions
         ValueTask<ReadOnlyMemory<byte>> ReadExactlyAsync(int byteCount);
         ValueTask FlushAsync();
         void Write(int byteCount, Action<Memory<byte>> writer);
+        void Disconnect();
     }
 
     public class BufferingSocket : IBufferingSocket, IDisposable
@@ -73,9 +74,15 @@ namespace Technical.Fail.SocketMethodExtensions
             _socket.Dispose();
         }
 
-        internal void Disconnect()
+        // Disconnects internal socket with reuseSocket = false;
+        public void Disconnect()
         {
             _socket.Disconnect(reuseSocket: false);
+        }
+
+        public void Close()
+        {
+            _socket.Close();
         }
     }
 }
