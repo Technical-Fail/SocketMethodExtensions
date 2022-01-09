@@ -10,7 +10,7 @@ namespace Technical.Fail.SocketMethodExtensions.Test
         [Fact]
         public async void ReceiveExactlyAsync_SingleChunk_SendAndReceiveSameCount_Test()
         {
-            using (var pair = await SocketTestUtils.ConnectSocketPairAsync())
+            using (var pair = await SocketTestUtils.ConnectSocketsAsync())
             {
                 // Send 10 bytes
                 pair.Socket1.Send(new byte[] { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 });
@@ -27,7 +27,7 @@ namespace Technical.Fail.SocketMethodExtensions.Test
         [Fact]
         public async void ReceiveExactlyAsync_SendInSmallChunks_Test()
         {
-            using (var pair = await SocketTestUtils.ConnectSocketPairAsync())
+            using (var pair = await SocketTestUtils.ConnectSocketsAsync())
             {
                 // Send 10 bytes
                 pair.Socket1.Send(new byte[] { 0, 1, 2, 3 });
@@ -49,7 +49,7 @@ namespace Technical.Fail.SocketMethodExtensions.Test
         [Fact]
         public async void ReceiveExactlyAsync_SendInSmallChunksWithOffset_Test()
         {
-            using (var pair = await SocketTestUtils.ConnectSocketPairAsync())
+            using (var pair = await SocketTestUtils.ConnectSocketsAsync())
             {
                 // Send 10 bytes
                 pair.Socket1.Send(new byte[] { 0, 1, 2, 3 });
@@ -71,7 +71,7 @@ namespace Technical.Fail.SocketMethodExtensions.Test
         [Fact]
         public async void ReceiveExactlyAsync_ReceiveInSmallerChunksThanSending_Test()
         {
-            using (var pair = await SocketTestUtils.ConnectSocketPairAsync())
+            using (var pair = await SocketTestUtils.ConnectSocketsAsync())
             {
                 // Send 17 bytes
                 pair.Socket1.Send(new byte[] { 1, 2, 3, 4, 5, 6, 7, 8, 9, 8, 7, 6, 5, 4, 3, 2, 1, 5, 5, 5, 5 });
@@ -91,7 +91,7 @@ namespace Technical.Fail.SocketMethodExtensions.Test
         public async void ReceiveExactlyAsync_Cancelled_ExpectCancelException_Test()
         {
             var cancellationTokenSource = new CancellationTokenSource();
-            using (var pair = await SocketTestUtils.ConnectSocketPairAsync())
+            using (var pair = await SocketTestUtils.ConnectSocketsAsync())
             {
                 // Send some of the bytes but not all
                 pair.Socket1.Send(new byte[] { 0, 1, 2, 3 });
@@ -110,7 +110,7 @@ namespace Technical.Fail.SocketMethodExtensions.Test
         [Fact]
         public async void ReceiveExactlyAsync_MultipleReceiveCallsSImultaniously_AlreadyCallingWithAsync_Test()
         {
-            using (var pair = await SocketTestUtils.ConnectSocketPairAsync())
+            using (var pair = await SocketTestUtils.ConnectSocketsAsync())
             {
                 // Start receiving right away to ensure waiting for the last 2 bytes to be sent to have a total of 10 bytes to receive
                 var receiveBuffer = new byte[20];
@@ -123,7 +123,7 @@ namespace Technical.Fail.SocketMethodExtensions.Test
         [Fact]
         public async void ReceiveExactlyAsync_MultipleReceiveCallsSImultaniously_AlreadyCallingWithBlocking_Test()
         {
-            using (var pair = await SocketTestUtils.ConnectSocketPairAsync())
+            using (var pair = await SocketTestUtils.ConnectSocketsAsync())
             {
                 // Start receiving right away to ensure waiting for the last 2 bytes to be sent to have a total of 10 bytes to receive
                 var receiveBuffer = new byte[20];
@@ -146,7 +146,7 @@ namespace Technical.Fail.SocketMethodExtensions.Test
         [InlineData(2)]
         public async void ConnectionClosingWhileReceiving_Test(uint closeDelaySeconds)
         {
-            using (var pair = await SocketTestUtils.ConnectSocketPairAsync())
+            using (var pair = await SocketTestUtils.ConnectSocketsAsync())
             {
                 var byteBuffer = new byte[15];
                 ArraySegment<byte> segmentBuffer = byteBuffer;

@@ -10,7 +10,7 @@ namespace Technical.Fail.SocketMethodExtensions.Test
         [Fact]
         public async void ReceiveExactlyBlocking_SingleChunk_SendAndReceiveSameCount_Test()
         {
-            using (var pair = await SocketTestUtils.ConnectSocketPairAsync())
+            using (var pair = await SocketTestUtils.ConnectSocketsAsync())
             {
                 // Send 10 bytes
                 pair.Socket1.Send(new byte[] { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 });
@@ -27,7 +27,7 @@ namespace Technical.Fail.SocketMethodExtensions.Test
         [Fact]
         public async void ReceiveExactlyBlocking_SendInSmallChunks_Test()
         {
-            using (var pair = await SocketTestUtils.ConnectSocketPairAsync())
+            using (var pair = await SocketTestUtils.ConnectSocketsAsync())
             {
                 // Send 10 bytes
                 pair.Socket1.Send(new byte[] { 0, 1, 2, 3 });
@@ -49,7 +49,7 @@ namespace Technical.Fail.SocketMethodExtensions.Test
         [Fact]
         public async void ReceiveExactlyBlocking_SendInSmallChunksWithOffset_Test()
         {
-            using (var pair = await SocketTestUtils.ConnectSocketPairAsync())
+            using (var pair = await SocketTestUtils.ConnectSocketsAsync())
             {
                 // Send 10 bytes
                 pair.Socket1.Send(new byte[] { 0, 1, 2, 3 });
@@ -72,7 +72,7 @@ namespace Technical.Fail.SocketMethodExtensions.Test
         [Fact]
         public async void ReceiveExactlyBlocking_ReceiveInSmallerChunksThanSending_Test()
         {
-            using (var pair = await SocketTestUtils.ConnectSocketPairAsync())
+            using (var pair = await SocketTestUtils.ConnectSocketsAsync())
             {
                 // Send 17 bytes
                 pair.Socket1.Send(new byte[] { 1, 2, 3, 4, 5, 6, 7, 8, 9, 8, 7, 6, 5, 4, 3, 2, 1, 5, 5, 5, 5 });
@@ -92,7 +92,7 @@ namespace Technical.Fail.SocketMethodExtensions.Test
         [Fact]
         public async void ReceiveExactlyBlocking_MultipleReceiveCalls_AlreadyCallingWithBlocking_ExpectException_Test()
         {
-            using (var pair = await SocketTestUtils.ConnectSocketPairAsync())
+            using (var pair = await SocketTestUtils.ConnectSocketsAsync())
             {
                 var receiveBuffer = new byte[20];
                 ArraySegment<byte> segmentBuffer = receiveBuffer;
@@ -114,7 +114,7 @@ namespace Technical.Fail.SocketMethodExtensions.Test
         [Fact]
         public async void ReceiveExactlyBlocking_MultipleReceiveCalls_AlreadyCallingWithAsync_ExpectException_Test()
         {
-            using (var pair = await SocketTestUtils.ConnectSocketPairAsync())
+            using (var pair = await SocketTestUtils.ConnectSocketsAsync())
             {
                 var byteBuffer = new byte[20];
                 ArraySegment<byte> segmentBuffer = byteBuffer;
@@ -128,7 +128,7 @@ namespace Technical.Fail.SocketMethodExtensions.Test
         [InlineData(2)]
         public async void ConnectionClosingWhileReceiving_Test(uint closeDelaySeconds)
         {
-            using (var pair = await SocketTestUtils.ConnectSocketPairAsync())
+            using (var pair = await SocketTestUtils.ConnectSocketsAsync())
             {
                 // Send 10 bytes
                 pair.Socket1.Send(new byte[] { 0, 1, 2, 3 });

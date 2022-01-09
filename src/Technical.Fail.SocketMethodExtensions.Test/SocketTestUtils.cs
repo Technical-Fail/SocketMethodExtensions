@@ -7,24 +7,21 @@ using Xunit;
 
 namespace Technical.Fail.SocketMethodExtensions.Test
 {
-    public static class SocketTestUtils
+    internal static class SocketTestUtils
     {
-        public async static Task<SocketPair> ConnectSocketPairAsync()
+        public static async Task<SocketPair> ConnectSocketsAsync()
         {
-            var listener = new TcpListener(localaddr: IPAddress.Parse("127.0.0.1"), port: 0);
+            var listener = new TcpListener(new IPEndPoint(IPAddress.Loopback, 0));
             listener.Start();
-
-            var serverEndpoint = new IPEndPoint(IPAddress.Parse("127.0.0.1"), ((IPEndPoint)listener.LocalEndpoint).Port);
-            Socket clientSocket = new Socket(serverEndpoint.AddressFamily, SocketType.Stream, ProtocolType.Tcp);
-
-            // Connect client and server
-            listener.Start();
-            Task connectTask = clientSocket.ConnectAsync(serverEndpoint);
-            Task<Socket> acceptTask = listener.AcceptSocketAsync();
-            await connectTask;
-            Socket serverSideSocket = await acceptTask;
+            var client = new TcpClient();
+            await client.ConnectAsync((IPEndPoint)listener.LocalEndpoint);
+            var serverSideSocket = await listener.AcceptSocketAsync();
             listener.Stop();
-            return new SocketPair(socket1: serverSideSocket, socket2: clientSocket);
+            return new SocketPair(socket1: client.Client, socket2: serverSideSocket);
+        }
+        public static async Task<BufferingSocketPair> ConnectBufferingSocketsAsync()
+        {
+            return new BufferingSocketPair(await ConnectSocketsAsync());
         }
 
         public static void AssertEqual(IEnumerable<byte> expected, IEnumerable<byte> actual)
@@ -33,28 +30,42 @@ namespace Technical.Fail.SocketMethodExtensions.Test
         }
     }
 
-    public class SocketPair : IDisposable
+    internal class SocketPair : IDisposable
     {
-        public Socket Socket1 { get; }
-        public Socket Socket2 { get; }
+        public Socket Socket1 { get; set; }
+        public Socket Socket2 { get; set; }
+
         public SocketPair(Socket socket1, Socket socket2)
         {
-            Socket1 = socket1 ?? throw new ArgumentNullException(nameof(socket1));
-            Socket2 = socket2 ?? throw new ArgumentNullException(nameof(socket2));
+            Socket1 = socket1;
+            Socket2 = socket2;
         }
 
         public void Dispose()
         {
-            try
-            {
-                Socket1?.Close();
-            }
-            catch { }
-            try
-            {
-                Socket2?.Close();
-            }
-            catch { }
+            Socket1.Dispose();
+            Socket2.Dispose();
+        }
+    }
+
+    internal class BufferingSocketPair : IDisposable
+    {
+        public BufferingSocket S1 { get; set; }
+        public BufferingSocket S2 { get; set; }
+
+        // For better readability in tests, these names can be used, too:
+        public BufferingSocket Sender => S1;
+        public BufferingSocket Receiver => S2;
+        public BufferingSocketPair(SocketPair socketPair)
+        {
+            S1 = new BufferingSocket(socketPair.Socket1);
+            S2 = new BufferingSocket(socketPair.Socket2);
+        }
+
+        public void Dispose()
+        {
+            S1.Dispose();
+            S2.Dispose();
         }
     }
 }
