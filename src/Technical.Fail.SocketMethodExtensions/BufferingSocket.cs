@@ -69,19 +69,9 @@ namespace Technical.Fail.SocketMethodExtensions
             _writePosition = 0;
         }
 
-        public void Dispose()
+        public void ShutdownAndClose()
         {
-            _socket.Dispose();
-        }
-
-        // Disconnects internal socket with reuseSocket = false;
-        public void Disconnect()
-        {
-            _socket.Disconnect(reuseSocket: false);
-        }
-
-        public void Close()
-        {
+            _socket.Shutdown(SocketShutdown.Both);
             _socket.Close();
         }
     }
