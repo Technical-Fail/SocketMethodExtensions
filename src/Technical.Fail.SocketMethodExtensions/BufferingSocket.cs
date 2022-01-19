@@ -1,18 +1,14 @@
 ﻿using System;
 using System.Net.Sockets;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Technical.Fail.SocketMethodExtensions
 {
-    public interface IBufferingSocket
-    {
-        ValueTask<ReadOnlyMemory<byte>> ReadExactlyAsync(int byteCount);
-        ValueTask FlushAsync();
-        void Write(int byteCount, Action<Memory<byte>> writer);
-        void Disconnect();
-    }
-
-    public class BufferingSocket : IBufferingSocket, IDisposable
+    /// <summary>
+    /// Responsible for handling buffering in a seemless way to the consumer.
+    /// </summary>
+    public class BufferingSocket : IDisposable
     {
         private readonly Socket _socket;
         private Memory<byte> _readBuffer = new Memory<byte>();
@@ -21,14 +17,29 @@ namespace Technical.Fail.SocketMethodExtensions
         public BufferingSocket(Socket socket)
         {
             _socket = socket;
+            _socket.NoDelay = true;
         }
 
-        public async ValueTask<ReadOnlyMemory<byte>> ReadExactlyAsync(int byteCount)
+        public async ValueTask<ReadOnlyMemory<byte>> ReadExactlyAsync(int byteCount, CancellationToken cancellationToken)
         {
-            _readBuffer = EnsureBufferSize(existingBuffer: _readBuffer, minimumSize: byteCount, copyValues: false);
-
+            // Get a memory chunk of desired size
+            EnsureBufferSize(existingBuffer: ref _readBuffer, requiredSize: byteCount, copyValues: false);
             var memory = _readBuffer.Slice(0, byteCount);
-            await _socket.ReceiveExactlyAsync(memory);
+
+            // Receive exactly this byte count
+            int offset = 0;
+            int byteCountToReceive = byteCount;
+
+            int bytesReceived = 0;
+            while (bytesReceived < byteCountToReceive)
+            {
+                int readCount = await _socket.ReceiveAsync(buffer: _readBuffer.Slice(offset, byteCountToReceive), socketFlags: SocketFlags.None, cancellationToken: cancellationToken);
+                if (readCount == 0)
+                    throw new ConnectionClosedException();
+                offset += readCount;
+                byteCountToReceive -= readCount;
+            }
+
             return memory;
         }
 
@@ -39,17 +50,19 @@ namespace Technical.Fail.SocketMethodExtensions
         /// <param name="writer">A function that is called with a buffer size of exactly the requested byteCount provided.</param>
         public void Write(int byteCount, Action<Memory<byte>> writer)
         {
-            _writeBuffer = EnsureBufferSize(existingBuffer: _writeBuffer, minimumSize: byteCount + _writePosition, copyValues: true);
+            EnsureBufferSize(existingBuffer: ref _writeBuffer, requiredSize: byteCount + _writePosition, copyValues: true);
             var memoryBite = _writeBuffer.Slice(_writePosition, byteCount);
+            //Console.WriteLine(GetHashCode() + " writing " + String.Join("|", memoryBite));
             writer(memoryBite);
             _writePosition += byteCount;
         }
 
-        private static Memory<byte> EnsureBufferSize(Memory<byte> existingBuffer, int minimumSize, bool copyValues)
+        private static void EnsureBufferSize(ref Memory<byte> existingBuffer, int requiredSize, bool copyValues)
         {
-            if (minimumSize <= existingBuffer.Length)
-                return existingBuffer;
-            var newBufferSize = Math.Max(existingBuffer.Length * 2, minimumSize);
+            if (requiredSize <= existingBuffer.Length)
+                return;
+
+            var newBufferSize = Math.Max(existingBuffer.Length * 2, requiredSize);
             var newBuffer = new Memory<byte>(new byte[newBufferSize]);
             if (copyValues)
             {
@@ -60,19 +73,35 @@ namespace Technical.Fail.SocketMethodExtensions
                     newSpan[i] = existingSpan[i];
                 }
             }
-            return newBuffer;
+            existingBuffer = newBuffer;
         }
 
         public async ValueTask FlushAsync()
         {
-            await _socket.SendAsync(_writeBuffer, SocketFlags.None);
+            await _socket.SendAsync(_writeBuffer.Slice(0, _writePosition), SocketFlags.None);
             _writePosition = 0;
         }
 
         public void ShutdownAndClose()
         {
-            _socket.Shutdown(SocketShutdown.Both);
-            _socket.Close();
+            try
+            {
+                _socket.Shutdown(SocketShutdown.Both);
+            }
+            catch { }
+
+            try
+            {
+                _socket.Close();
+            }
+            catch { }
         }
+
+        public void Dispose()
+        {
+            ShutdownAndClose();
+        }
+
+        public class ConnectionClosedException : Exception { }
     }
 }
